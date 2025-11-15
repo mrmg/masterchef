@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  --color-cream: #FAF9F6;
+  --color-charcoal: #2C2C2C;
+  --color-gold: #D4AF37;
+  --color-burgundy: #800020;
+  --color-sage: #9CAF88;
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Lato', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+
+/* Tablet Layout - No scrolling, viewport-based scaling */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  html {
+    font-size: clamp(12px, 1.5vw, 16px);
+  }
+  
+  body {
+    overflow: hidden;
+  }
+  
+  .contestant-manager-container {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+  
+  .contestant-manager-content {
+    height: 100%;
+    max-height: 100%;
+    overflow: visible;
+  }
+  
+  /* Ensure touch targets are at least 60px */
+  button, a, input, select {
+    min-height: 60px;
+    min-width: 60px;
+  }
+  
+  /* Scale headings for tablet */
+  h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+  
+  h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+  
+  h3 {
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  }
+}
+
+/* Mobile Layout - Allow scrolling, stack-based layouts */
+@media (max-width: 767px) {
+  html {
+    font-size: 16px;
+  }
+  
+  body {
+    overflow-y: auto;
+  }
+  
+  .contestant-manager-content {
+    min-height: auto;
+  }
+  
+  /* Ensure touch targets are at least 44px */
+  button, a, input, select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile-friendly spacing */
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  /* Adjust headings for mobile */
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Portrait mode - Allow scrolling */
+@media (orientation: portrait) {
+  body {
+    overflow-y: auto;
+  }
+  
+  .contestant-manager-content {
+    min-height: auto;
+  }
+}

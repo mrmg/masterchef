@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Session documents - anyone with the session code can read and write
+    match /sessions/{sessionCode} {
+      // Allow read access to anyone with the session code
+      allow read: if true;
+      
+      // Allow write access to anyone with the session code
+      // This is a trust-based system as specified in the requirements
+      allow write: if true;
+    }
+  }
+}

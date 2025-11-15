@@ -1,0 +1,14 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow anyone to read photos
+    match /sessions/{sessionCode}/photos/{photoId}/{fileName} {
+      allow read: if true;
+      
+      // Allow anyone with the session code to upload photos
+      // This is a trust-based system as specified in the requirements
+      allow write: if true;
+    }
+  }
+}
