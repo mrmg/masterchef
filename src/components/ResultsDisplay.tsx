@@ -18,6 +18,26 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
   const renderWinner = () => {
     if (!winner) return null;
 
+    // Get top comments for the winner
+    const winnerComments: Array<{ voter: string; comment: string | undefined; totalScore: number }> = [];
+    Object.values(gameState.votes).forEach((roundVotes) => {
+      Object.entries(roundVotes).forEach(([voterName, voterVotes]) => {
+        if (voterVotes[winner.chefId]?.comment) {
+          const vote = voterVotes[winner.chefId];
+          winnerComments.push({
+            voter: voterName,
+            comment: vote.comment,
+            totalScore: vote.technique + vote.presentation + vote.taste,
+          });
+        }
+      });
+    });
+
+    // Sort by score and take top 2
+    const topComments = winnerComments
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .slice(0, 2);
+
     return (
       <motion.div
         key="winner"
@@ -63,10 +83,48 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
             fontSize: '3rem',
             fontFamily: 'var(--font-serif)',
             color: 'var(--color-charcoal)',
+            marginBottom: '2rem',
           }}
         >
           {winner.totalScore} points
         </div>
+
+        {topComments.length > 0 && (
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            {topComments.map((comment, idx) => (
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: 'var(--color-cream)',
+                  padding: '1rem',
+                  borderRadius: '0.5rem',
+                  marginBottom: '1rem',
+                  border: '2px solid var(--color-gold)',
+                }}
+              >
+                <p
+                  style={{
+                    fontStyle: 'italic',
+                    color: 'var(--color-charcoal)',
+                    marginBottom: '0.5rem',
+                    fontSize: '1.125rem',
+                  }}
+                >
+                  "{comment.comment}"
+                </p>
+                <p
+                  style={{
+                    fontSize: '0.875rem',
+                    color: 'var(--color-charcoal)',
+                    opacity: 0.7,
+                  }}
+                >
+                  — {comment.voter}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </motion.div>
     );
   };
@@ -178,7 +236,7 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {leaderboard.map((chef) => {
-            const chefVotes: Array<{ voter: string; technique: number; presentation: number; taste: number }> = [];
+            const chefVotes: Array<{ voter: string; technique: number; presentation: number; taste: number; comment?: string }> = [];
             
             Object.values(gameState.votes).forEach((roundVotes) => {
               Object.entries(roundVotes).forEach(([voterName, voterVotes]) => {
@@ -188,9 +246,17 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
                     technique: voterVotes[chef.chefId].technique,
                     presentation: voterVotes[chef.chefId].presentation,
                     taste: voterVotes[chef.chefId].taste,
+                    comment: voterVotes[chef.chefId].comment,
                   });
                 }
               });
+            });
+
+            // Sort votes by total score descending
+            chefVotes.sort((a, b) => {
+              const totalA = a.technique + a.presentation + a.taste;
+              const totalB = b.technique + b.presentation + b.taste;
+              return totalB - totalA;
             });
 
             return (
@@ -213,31 +279,45 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
                 >
                   {chef.chefName} - {chef.dish}
                 </h3>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid var(--color-charcoal)' }}>
-                        <th style={{ padding: '0.5rem', textAlign: 'left' }}>Voter</th>
-                        <th style={{ padding: '0.5rem', textAlign: 'center' }}>Technique</th>
-                        <th style={{ padding: '0.5rem', textAlign: 'center' }}>Presentation</th>
-                        <th style={{ padding: '0.5rem', textAlign: 'center' }}>Taste</th>
-                        <th style={{ padding: '0.5rem', textAlign: 'center' }}>Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {chefVotes.map((vote, index) => (
-                        <tr key={index} style={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                          <td style={{ padding: '0.5rem' }}>{vote.voter}</td>
-                          <td style={{ padding: '0.5rem', textAlign: 'center' }}>{vote.technique}</td>
-                          <td style={{ padding: '0.5rem', textAlign: 'center' }}>{vote.presentation}</td>
-                          <td style={{ padding: '0.5rem', textAlign: 'center' }}>{vote.taste}</td>
-                          <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: 'bold' }}>
-                            {vote.technique + vote.presentation + vote.taste}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {chefVotes.map((vote, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        backgroundColor: 'var(--color-cream)',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid var(--color-charcoal)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                          {vote.voter}
+                        </span>
+                        <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                          {vote.technique + vote.presentation + vote.taste}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-charcoal)' }}>
+                        <span>Technique: {vote.technique}</span>
+                        <span>Presentation: {vote.presentation}</span>
+                        <span>Taste: {vote.taste}</span>
+                      </div>
+                      {vote.comment && (
+                        <div style={{ 
+                          fontStyle: 'italic', 
+                          color: 'var(--color-charcoal)', 
+                          opacity: 0.8,
+                          fontSize: '0.875rem',
+                          marginTop: '0.5rem',
+                          paddingTop: '0.5rem',
+                          borderTop: '1px solid rgba(0,0,0,0.1)',
+                        }}>
+                          "{vote.comment}"
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             );
@@ -252,11 +332,14 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
       style={{
         minHeight: '100vh',
         padding: '2rem',
+        paddingTop: '5rem',
         display: 'flex',
         flexDirection: 'column',
+        maxHeight: '100vh',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ marginBottom: '2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ marginBottom: '2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', flexShrink: 0 }}>
         {[
           { key: 'winner', label: 'Winner' },
           { key: 'overall', label: 'Overall' },
@@ -284,7 +367,7 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
         ))}
       </div>
 
-      <div style={{ flex: 1, maxWidth: '64rem', width: '100%', margin: '0 auto' }}>
+      <div style={{ flex: 1, maxWidth: '64rem', width: '100%', margin: '0 auto', overflowY: 'auto', minHeight: 0 }}>
         <AnimatePresence mode="wait">
           {currentView === 'winner' && renderWinner()}
           {currentView === 'overall' && renderLeaderboard(leaderboard, 'Overall Leaderboard')}

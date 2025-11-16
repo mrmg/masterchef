@@ -66,7 +66,7 @@ const PhotoGallery = ({ sessionCode, gameState, uploaderName, currentPhase, curr
       const chefNames = roundPhotos[0]?.roundChefs
         .map(chefId => gameState.chefs[chefId]?.name)
         .filter(Boolean)
-        .join(' & ') || '';
+        .join(' vs ') || '';
       
       groupArray.push({
         title: `Round ${roundNumber}: ${chefNames}`,
@@ -136,7 +136,7 @@ const PhotoGallery = ({ sessionCode, gameState, uploaderName, currentPhase, curr
       const chefNames = photo.roundChefs
         .map(chefId => gameState.chefs[chefId]?.name)
         .filter(Boolean)
-        .join(' & ');
+        .join(' vs ');
       return `Round ${photo.roundNumber}: ${chefNames}`;
     }
     return 'Pre-game / Post-game';
@@ -246,7 +246,7 @@ const PhotoGallery = ({ sessionCode, gameState, uploaderName, currentPhase, curr
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--color-cream)',
-          margin: '2rem auto',
+          margin: '2rem 1rem',
           maxWidth: '1200px',
           borderRadius: '0.5rem',
           padding: '2rem',
@@ -262,52 +262,49 @@ const PhotoGallery = ({ sessionCode, gameState, uploaderName, currentPhase, curr
           onChange={handleFileSelect}
         />
 
-        {/* Upload button */}
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          style={{
-            position: 'absolute',
-            top: '1rem',
-            left: '1rem',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: isUploading ? 'var(--color-sage)' : 'var(--color-gold)',
-            color: 'var(--color-charcoal)',
-            border: 'none',
-            cursor: isUploading ? 'not-allowed' : 'pointer',
-            fontSize: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {isUploading ? '...' : '+'}
-        </button>
+        {/* Header buttons */}
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem' }}>
+          {/* Upload button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: isUploading ? 'var(--color-sage)' : 'var(--color-gold)',
+              color: 'var(--color-charcoal)',
+              border: 'none',
+              cursor: isUploading ? 'not-allowed' : 'pointer',
+              fontSize: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {isUploading ? '...' : '+'}
+          </button>
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--color-burgundy)',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          ×
-        </button>
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--color-burgundy)',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            ×
+          </button>
+        </div>
 
         {/* Upload progress/error */}
         {isUploading && (

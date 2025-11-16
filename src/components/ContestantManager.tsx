@@ -131,6 +131,7 @@ const ContestantManager = ({ sessionCode, chefs, onContinue }: ContestantManager
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="min-h-screen p-4 flex flex-col contestant-manager-container"
+      style={{ paddingTop: '5rem' }}
     >
       <div className="max-w-4xl mx-auto w-full flex flex-col contestant-manager-content">
         {/* Header */}
@@ -293,7 +294,7 @@ const ContestantManager = ({ sessionCode, chefs, onContinue }: ContestantManager
               flexShrink: 0,
             }}
           >
-            Continue to Game
+            Lets Cook!
           </button>
         )}
       </div>
@@ -320,24 +321,33 @@ const ContestantManager = ({ sessionCode, chefs, onContinue }: ContestantManager
             />
             
             {/* Modal */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+            <div
               style={{
                 position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: 'white',
-                padding: '2rem',
-                borderRadius: '0.5rem',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 zIndex: 51,
-                width: '90%',
-                maxWidth: '400px',
+                padding: '1rem',
               }}
             >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                style={{
+                  backgroundColor: 'white',
+                  padding: '2rem',
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                  width: '100%',
+                  maxWidth: '400px',
+                }}
+              >
               <h2 className="text-2xl font-serif mb-4" style={{ color: 'var(--color-charcoal)' }}>
                 Add Chef
               </h2>
@@ -401,7 +411,8 @@ const ContestantManager = ({ sessionCode, chefs, onContinue }: ContestantManager
                   </button>
                 </div>
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>

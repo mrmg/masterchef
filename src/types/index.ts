@@ -27,6 +27,7 @@ export interface CategoryScores {
 
 export interface Vote extends CategoryScores {
   timestamp: Timestamp;
+  comment?: string;
 }
 
 export interface VoteData {

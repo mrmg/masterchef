@@ -1,7 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { Chef } from '../types/index';
 import { Timestamp } from 'firebase/firestore';
+
+// Import audio files
+import countdownSound from '../assets/countdown.mp3';
+import sound1 from '../assets/GANDYS FLIP FLOP - AUDIO FROM JAYUZUMI.COM.mp3';
+import sound2 from '../assets/I DON\'T THINK YOU CAN ACTUALLY COOK - AUDIO FROM JAYUZUMI.COM.mp3';
+import sound3 from '../assets/I WOULD BE IF I COOKED THAT SHIT - AUDIO FROM JAYUZUMI.COM.mp3';
+import sound4 from '../assets/JUST LEAVE IT - AUDIO FROM JAYUZUMI.COM.mp3';
+import sound5 from '../assets/NO YOU\'RE NOT EATING THAT - AUDIO FROM JAYUZUMI.COM.mp3';
+import sound6 from '../assets/WHAT ARE YOU - AUDIO FROM JAYUZUMI.COM.mp3';
+import sound7 from '../assets/YOU\'RE A GREAT TALKER BUT YOU\'RE A SH-T COOK - AUDIO FROM JAYUZUMI.COM.mp3';
+
+const endSounds = [sound1, sound2, sound3, sound4, sound5, sound6, sound7];
 
 interface RoundTimerProps {
   roundTime: number;
@@ -22,10 +34,60 @@ const RoundTimer = ({
 }: RoundTimerProps) => {
   const [remainingTime, setRemainingTime] = useState(roundTime);
   const [isActive, setIsActive] = useState(false);
+  const countdownAudioRef = useRef<HTMLAudioElement | null>(null);
+  const endAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio elements
+  useEffect(() => {
+    const countdown = new Audio(countdownSound);
+    countdown.loop = false; // Ensure no looping
+    countdownAudioRef.current = countdown;
+    
+    // Pick a random end sound
+    const randomSound = endSounds[Math.floor(Math.random() * endSounds.length)];
+    const endSound = new Audio(randomSound);
+    endSound.loop = false; // Ensure no looping
+    endAudioRef.current = endSound;
+    
+    // Listen for mute toggle events
+    const handleMuteToggle = (event: Event) => {
+      const customEvent = event as CustomEvent<{ muted: boolean }>;
+      if (countdownAudioRef.current) {
+        countdownAudioRef.current.volume = customEvent.detail.muted ? 0 : 1;
+      }
+      if (endAudioRef.current) {
+        endAudioRef.current.volume = customEvent.detail.muted ? 0 : 1;
+      }
+    };
+    
+    window.addEventListener('muteToggle', handleMuteToggle);
+    
+    // Check initial mute state from localStorage
+    const savedMuteState = localStorage.getItem('masterchef_muted');
+    if (savedMuteState === 'true') {
+      if (countdownAudioRef.current) countdownAudioRef.current.volume = 0;
+      if (endAudioRef.current) endAudioRef.current.volume = 0;
+    }
+    
+    return () => {
+      window.removeEventListener('muteToggle', handleMuteToggle);
+      if (countdownAudioRef.current) {
+        countdownAudioRef.current.pause();
+        countdownAudioRef.current = null;
+      }
+      if (endAudioRef.current) {
+        endAudioRef.current.pause();
+        endAudioRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (timerStartTime && timerEndTime) {
       setIsActive(true);
+      
+      // Use refs to track if sounds have been played to avoid re-renders
+      const soundsPlayed = { countdown: false, end: false };
       
       const interval = setInterval(() => {
         const now = Date.now();
@@ -34,9 +96,23 @@ const RoundTimer = ({
         
         setRemainingTime(remaining);
         
+        // Play countdown sound at 32 seconds
+        if (remaining === 32 && !soundsPlayed.countdown && countdownAudioRef.current) {
+          countdownAudioRef.current.play().catch(err => console.error('Failed to play countdown:', err));
+          soundsPlayed.countdown = true;
+        }
+        
         if (remaining === 0) {
           clearInterval(interval);
           setIsActive(false);
+          
+          // Play random end sound 1 second after timer ends
+          if (!soundsPlayed.end && endAudioRef.current) {
+            setTimeout(() => {
+              endAudioRef.current?.play().catch(err => console.error('Failed to play end sound:', err));
+            }, 1000);
+            soundsPlayed.end = true;
+          }
         }
       }, 100);
 
@@ -70,6 +146,7 @@ const RoundTimer = ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem',
+        paddingTop: '5rem',
       }}
     >
       <div style={{ maxWidth: '48rem', width: '100%', textAlign: 'center' }}>
@@ -182,32 +259,12 @@ const RoundTimer = ({
                 onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
               >
-                Start Timer
+                Start Cooking!
               </button>
             </div>
           )}
 
-          {isActive && (
-            <button
-              onClick={onRestart}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: 'var(--color-gold)',
-                color: 'var(--color-charcoal)',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '1rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                marginTop: '1rem',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              Restart Round
-            </button>
-          )}
+
 
           {!isActive && remainingTime === 0 && (
             <div>
@@ -221,44 +278,24 @@ const RoundTimer = ({
               >
                 Time's Up!
               </p>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <button
-                  onClick={onComplete}
-                  style={{
-                    padding: '1rem 2rem',
-                    backgroundColor: 'var(--color-gold)',
-                    color: 'var(--color-charcoal)',
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '1.5rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                  Continue
-                </button>
-                <button
-                  onClick={onRestart}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: 'var(--color-gold)',
-                    color: 'var(--color-charcoal)',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '1rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                  Restart Round
-                </button>
-              </div>
+              <button
+                onClick={onComplete}
+                style={{
+                  padding: '1rem 2rem',
+                  backgroundColor: 'var(--color-gold)',
+                  color: 'var(--color-charcoal)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '1.5rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                Continue
+              </button>
             </div>
           )}
         </div>

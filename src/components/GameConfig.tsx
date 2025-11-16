@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { updateGameConfig } from '../services/sessionService';
-import { useGame } from '../contexts/GameContext';
 
 interface GameConfigProps {
   sessionCode: string;
@@ -9,20 +8,11 @@ interface GameConfigProps {
 }
 
 const GameConfig = ({ sessionCode, onComplete }: GameConfigProps) => {
-  const { gameState } = useGame();
   const [simultaneousPlayers, setSimultaneousPlayers] = useState(2);
   const [roundTime, setRoundTime] = useState(1200); // 20 minutes in seconds
 
-  // Sync local state with Firebase
-  useEffect(() => {
-    if (gameState?.config) {
-      setSimultaneousPlayers(gameState.config.simultaneousPlayers);
-      setRoundTime(gameState.config.roundTime);
-    }
-  }, [gameState?.config]);
-
   const roundTimeOptions = [
-    { label: '5 seconds (testing)', value: 5 },
+    { label: '1 minute (testing)', value: 60 },
     { label: '5 minutes', value: 300 },
     { label: '10 minutes', value: 600 },
     { label: '15 minutes', value: 900 },
@@ -86,11 +76,27 @@ const GameConfig = ({ sessionCode, onComplete }: GameConfigProps) => {
                 <button
                   key={num}
                   onClick={() => handleSimultaneousPlayersChange(num)}
-                  className={`py-3 rounded-lg font-serif text-xl transition-all ${
-                    simultaneousPlayers === num
-                      ? 'bg-gold text-charcoal'
-                      : 'bg-cream text-charcoal border-2 border-charcoal hover:bg-charcoal hover:text-cream'
-                  }`}
+                  style={{
+                    padding: '0.75rem',
+                    borderRadius: '0.5rem',
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '1.25rem',
+                    transition: 'all 0.2s',
+                    backgroundColor: 'var(--color-cream)',
+                    color: 'var(--color-charcoal)',
+                    border: `2px solid ${simultaneousPlayers === num ? 'var(--color-gold)' : 'var(--color-charcoal)'}`,
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (simultaneousPlayers !== num) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-charcoal)';
+                      e.currentTarget.style.color = 'var(--color-cream)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-cream)';
+                    e.currentTarget.style.color = 'var(--color-charcoal)';
+                  }}
                 >
                   {num}
                 </button>
@@ -117,7 +123,20 @@ const GameConfig = ({ sessionCode, onComplete }: GameConfigProps) => {
 
           <button
             onClick={handleSubmit}
-            className="w-full py-4 px-6 bg-gold text-charcoal font-serif text-xl rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105"
+            style={{
+              width: '100%',
+              padding: '1rem 1.5rem',
+              backgroundColor: 'var(--color-gold)',
+              color: 'var(--color-charcoal)',
+              fontFamily: 'var(--font-serif)',
+              fontSize: '1.25rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           >
             Start Game
           </button>

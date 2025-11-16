@@ -1,4 +1,4 @@
-import type { Chef, SessionDocument, LeaderboardEntry } from '../types/index';
+import type { SessionDocument, LeaderboardEntry } from '../types/index';
 
 export const calculateLeaderboards = (session: SessionDocument): LeaderboardEntry[] => {
   const { chefs, votes } = session;

@@ -1,4 +1,5 @@
-import type { Chef, GamePhase, SessionDocument } from '../types/index';
+import type { Chef, SessionDocument } from '../types/index';
+import { GamePhase } from '../types/index';
 
 export const getNextRoundChefs = (
   chefs: { [chefId: string]: Chef },

@@ -12,6 +12,47 @@ interface VotingInterfaceProps {
   currentVoterName?: string;
 }
 
+// Score selector component
+const ScoreSelector = ({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) => (
+  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: '1rem' }}>
+    <label
+      style={{
+        fontSize: '1rem',
+        fontFamily: 'var(--font-serif)',
+        color: 'var(--color-charcoal)',
+        minWidth: '110px',
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' }}>
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+        <button
+          key={num}
+          onClick={() => onChange(num)}
+          style={{
+            width: '40px',
+            height: '40px',
+            minWidth: '40px',
+            minHeight: '40px',
+            borderRadius: '0.25rem',
+            border: '2px solid var(--color-charcoal)',
+            backgroundColor: value === num ? 'var(--color-gold)' : 'transparent',
+            color: 'var(--color-charcoal)',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            padding: 0,
+          }}
+        >
+          {num}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
 const VotingInterface = ({
   sessionCode,
   roundNumber,
@@ -25,10 +66,10 @@ const VotingInterface = ({
   const [technique, setTechnique] = useState(5);
   const [presentation, setPresentation] = useState(5);
   const [taste, setTaste] = useState(5);
+  const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentChef = currentRoundChefs[currentChefIndex];
-  const isLastChef = currentChefIndex === currentRoundChefs.length - 1;
 
   // Filter out voters who have already completed voting in this session
   // AND filter out participants who have no one to vote for (they were the only chef)
@@ -59,11 +100,17 @@ const VotingInterface = ({
     setIsSubmitting(true);
 
     try {
-      await submitVote(sessionCode, roundNumber, selectedVoter, currentChef.id, {
+      const voteData: any = {
         technique,
         presentation,
         taste,
-      });
+      };
+      
+      if (comment.trim()) {
+        voteData.comment = comment.trim();
+      }
+      
+      await submitVote(sessionCode, roundNumber, selectedVoter, currentChef.id, voteData);
 
       // Find next chef this voter can vote for
       const nextChefIndex = currentRoundChefs.findIndex((chef, idx) => 
@@ -80,12 +127,15 @@ const VotingInterface = ({
       } else {
         // Move to next chef
         setCurrentChefIndex(nextChefIndex);
+        // Scroll to top of page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // Reset scores
+      // Reset scores and comment
       setTechnique(5);
       setPresentation(5);
       setTaste(5);
+      setComment('');
     } catch (error) {
       console.error('Failed to submit vote:', error);
     } finally {
@@ -100,13 +150,13 @@ const VotingInterface = ({
         animate={{ opacity: 1 }}
         style={{
           minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          height: 'auto',
           padding: '2rem',
+          paddingTop: '5rem',
+          paddingBottom: '5rem',
         }}
       >
-        <div style={{ maxWidth: '48rem', width: '100%' }}>
+        <div style={{ maxWidth: '48rem', width: '100%', margin: '0 auto' }}>
           <h1
             style={{
               fontSize: '2.5rem',
@@ -165,145 +215,153 @@ const VotingInterface = ({
       animate={{ opacity: 1 }}
       style={{
         minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        height: 'auto',
         padding: '2rem',
+        paddingTop: '5rem',
+        paddingBottom: '5rem',
       }}
     >
-      <div style={{ maxWidth: '48rem', width: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <p style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginBottom: '0.5rem' }}>
-            Voting as: <strong>{selectedVoter}</strong>
-          </p>
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-charcoal)', opacity: 0.7 }}>
-            Chef {chefsToVoteFor.findIndex(c => c.id === currentChef.id) + 1} of {chefsToVoteFor.length}
-          </p>
-        </div>
-
+      <div style={{ maxWidth: '48rem', width: '100%', margin: '0 auto' }}>
         <div
           style={{
             backgroundColor: 'white',
-            padding: '2rem',
+            padding: '1.5rem',
             borderRadius: '0.5rem',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           }}
         >
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <h2
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+            <div>
+              <h2
+                style={{
+                  fontSize: '1.5rem',
+                  fontFamily: 'var(--font-serif)',
+                  color: 'var(--color-charcoal)',
+                  margin: 0,
+                  marginBottom: '0.25rem',
+                }}
+              >
+                {currentChef.name}
+              </h2>
+              <p
+                style={{
+                  fontSize: '1rem',
+                  fontStyle: 'italic',
+                  color: 'var(--color-charcoal)',
+                  opacity: 0.7,
+                  margin: 0,
+                }}
+              >
+                {currentChef.dish}
+              </p>
+            </div>
+            <div style={{ textAlign: 'right', fontSize: '0.75rem', color: 'var(--color-charcoal)', opacity: 0.7 }}>
+              <div>Voting as: <strong>{selectedVoter}</strong></div>
+              <div>Chef {chefsToVoteFor.findIndex(c => c.id === currentChef.id) + 1} of {chefsToVoteFor.length}</div>
+            </div>
+          </div>
+
+          {/* Scoring */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <ScoreSelector label="Technique" value={technique} onChange={setTechnique} />
+            <ScoreSelector label="Presentation" value={presentation} onChange={setPresentation} />
+            <ScoreSelector label="Taste" value={taste} onChange={setTaste} />
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '1.125rem',
+                  fontFamily: 'var(--font-serif)',
+                  color: 'var(--color-charcoal)',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Comment (optional)
+              </label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share your thoughts..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid var(--color-charcoal)',
+                  borderRadius: '0.5rem',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '1rem',
+                  color: 'var(--color-charcoal)',
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              onClick={handleSubmitVote}
+              disabled={isSubmitting}
               style={{
-                fontSize: '2rem',
+                flex: '3',
+                padding: '1rem 2rem',
+                backgroundColor: 'var(--color-gold)',
+                color: 'var(--color-charcoal)',
                 fontFamily: 'var(--font-serif)',
-                color: 'var(--color-charcoal)',
-                marginBottom: '0.5rem',
-              }}
-            >
-              {currentChef.name}
-            </h2>
-            <p
-              style={{
                 fontSize: '1.25rem',
-                fontStyle: 'italic',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                opacity: isSubmitting ? 0.5 : 1,
+                transition: 'transform 0.2s',
+              }}
+              onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.transform = 'scale(1.05)')}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              {isSubmitting ? 'Submitting...' : 
+               chefsToVoteFor.findIndex(c => c.id === currentChef.id) === chefsToVoteFor.length - 1 
+                 ? 'Submit Final Vote' 
+                 : 'Next Chef'}
+            </button>
+            
+            <button
+              onClick={() => {
+                setSelectedVoter(null);
+                setCurrentChefIndex(0);
+                setTechnique(5);
+                setPresentation(5);
+                setTaste(5);
+                setComment('');
+              }}
+              disabled={isSubmitting}
+              style={{
+                flex: '1',
+                padding: '1rem',
+                backgroundColor: 'transparent',
                 color: 'var(--color-charcoal)',
-                opacity: 0.7,
+                fontFamily: 'var(--font-sans)',
+                fontSize: '1rem',
+                borderRadius: '0.5rem',
+                border: '2px solid var(--color-charcoal)',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                opacity: isSubmitting ? 0.5 : 1,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (!isSubmitting) {
+                  e.currentTarget.style.backgroundColor = 'var(--color-charcoal)';
+                  e.currentTarget.style.color = 'var(--color-cream)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--color-charcoal)';
               }}
             >
-              {currentChef.dish}
-            </p>
+              Cancel
+            </button>
           </div>
-
-          <div style={{ marginBottom: '2rem' }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '1.125rem',
-                  fontFamily: 'var(--font-serif)',
-                  color: 'var(--color-charcoal)',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                Technique: {technique}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                value={technique}
-                onChange={(e) => setTechnique(Number(e.target.value))}
-                style={{ width: '100%', height: '8px', cursor: 'pointer' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '1.125rem',
-                  fontFamily: 'var(--font-serif)',
-                  color: 'var(--color-charcoal)',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                Presentation: {presentation}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                value={presentation}
-                onChange={(e) => setPresentation(Number(e.target.value))}
-                style={{ width: '100%', height: '8px', cursor: 'pointer' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '1.125rem',
-                  fontFamily: 'var(--font-serif)',
-                  color: 'var(--color-charcoal)',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                Taste: {taste}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                value={taste}
-                onChange={(e) => setTaste(Number(e.target.value))}
-                style={{ width: '100%', height: '8px', cursor: 'pointer' }}
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={handleSubmitVote}
-            disabled={isSubmitting}
-            style={{
-              width: '100%',
-              padding: '1rem 2rem',
-              backgroundColor: 'var(--color-gold)',
-              color: 'var(--color-charcoal)',
-              fontFamily: 'var(--font-serif)',
-              fontSize: '1.5rem',
-              borderRadius: '0.5rem',
-              border: 'none',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.5 : 1,
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.transform = 'scale(1.05)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-          >
-            {isSubmitting ? 'Submitting...' : 
-             chefsToVoteFor.findIndex(c => c.id === currentChef.id) === chefsToVoteFor.length - 1 
-               ? 'Submit Final Vote' 
-               : 'Next Chef'}
-          </button>
         </div>
       </div>
     </motion.div>

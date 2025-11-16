@@ -8,6 +8,7 @@ import ResultsDisplay from './components/ResultsDisplay';
 import RestartGameButton from './components/RestartGameButton';
 import PhotoGalleryButton from './components/PhotoGalleryButton';
 import PhotoNotification from './components/PhotoNotification';
+import MuteButton from './components/MuteButton';
 import { GameProvider, useGame } from './contexts/GameContext';
 import { GamePhase } from './types/index';
 import { getNextRoundChefs, getChefsByIds, hasMoreRounds, getAllParticipantNames } from './utils/gamePhases';
@@ -94,12 +95,24 @@ const GameContent = () => {
   };
 
   if (phase === GamePhase.SETUP) {
+    const uploaderName = 'User';
     return (
-      <ContestantManager
-        sessionCode={sessionCode}
-        chefs={gameState.chefs}
-        onContinue={handleStartGame}
-      />
+      <>
+        <ContestantManager
+          sessionCode={sessionCode}
+          chefs={gameState.chefs}
+          onContinue={handleStartGame}
+        />
+        <PhotoGalleryButton 
+          sessionCode={sessionCode} 
+          gameState={gameState}
+          uploaderName={uploaderName}
+          currentPhase={phase}
+          currentRound={currentRound}
+          currentRoundChefs={currentRoundChefs}
+        />
+        <PhotoNotification gameState={gameState} currentUserName={uploaderName} />
+      </>
     );
   }
 
@@ -200,11 +213,14 @@ const GameContent = () => {
     <>
       {content}
       {showRestartGameButton && (
-        <RestartGameButton 
-          onRestartGame={handleRestartGame}
-          onRestartRound={handleRestartRound}
-          showRestartRound={phase === GamePhase.ROUND_READY || phase === GamePhase.ROUND_ACTIVE || phase === GamePhase.ROUND_COMPLETE}
-        />
+        <>
+          <RestartGameButton 
+            onRestartGame={handleRestartGame}
+            onRestartRound={handleRestartRound}
+            showRestartRound={phase === GamePhase.ROUND_READY || phase === GamePhase.ROUND_ACTIVE || phase === GamePhase.ROUND_COMPLETE}
+          />
+          <MuteButton />
+        </>
       )}
       {showPhotoFeed && (
         <>

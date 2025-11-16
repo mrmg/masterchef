@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "masterchefgame",
     "public": "dist",
     "ignore": [
       "firebase.json",

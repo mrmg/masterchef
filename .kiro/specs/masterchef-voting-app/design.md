@@ -812,7 +812,7 @@ The live photo feed is a core feature that enables real-time photo sharing throu
   - Pinch-to-zoom support
   - Close button or swipe down to exit
   - Photo metadata overlay (uploader, timestamp, round context)
-  - Round context displays: "Round 2: Alice & Bob" or "Pre-game" or "Post-game"
+  - Round context displays: "Round 2: Alice vs Bob" or "Pre-game" or "Post-game"
 
 ### Performance Optimization
 - **Lazy Loading**: Load thumbnails first, full images on demand

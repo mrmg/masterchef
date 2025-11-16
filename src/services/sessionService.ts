@@ -16,6 +16,7 @@ interface CategoryScores {
   technique: number;
   presentation: number;
   taste: number;
+  comment?: string;
 }
 
 const SESSIONS_COLLECTION = 'sessions';
@@ -106,7 +107,7 @@ export const addChef = async (
 
 export const deleteChef = async (
   sessionCode: string,
-  chefId: string,
+  _chefId: string,
   remainingChefs: { [chefId: string]: Chef }
 ): Promise<void> => {
   const sessionRef = doc(db, SESSIONS_COLLECTION, sessionCode);
@@ -175,11 +176,20 @@ export const submitVote = async (
       throw new Error('Session not found');
     }
     
+    // Build vote object, only including comment if it exists
+    const voteData: any = {
+      technique: scores.technique,
+      presentation: scores.presentation,
+      taste: scores.taste,
+      timestamp: Timestamp.now(),
+    };
+    
+    if (scores.comment) {
+      voteData.comment = scores.comment;
+    }
+    
     transaction.update(sessionRef, {
-      [`votes.${roundNumber}.${voterName}.${chefId}`]: {
-        ...scores,
-        timestamp: Timestamp.now(),
-      },
+      [`votes.${roundNumber}.${voterName}.${chefId}`]: voteData,
     });
   });
 };

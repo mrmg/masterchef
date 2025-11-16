@@ -24,28 +24,40 @@ const RestartGameButton = ({ onRestartGame, onRestartRound, showRestartRound }: 
 
   return (
     <>
-      <button
+      <motion.button
         onClick={() => setShowConfirmation(true)}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         style={{
           position: 'fixed',
           top: '1rem',
           right: '1rem',
-          padding: '0.75rem 1.5rem',
-          backgroundColor: 'var(--color-burgundy)',
-          color: 'white',
-          fontFamily: 'var(--font-sans)',
-          fontSize: '0.875rem',
-          borderRadius: '0.5rem',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          backgroundColor: 'var(--color-gold)',
           border: 'none',
           cursor: 'pointer',
-          transition: 'transform 0.2s',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           zIndex: 1000,
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
       >
-        Restart Game
-      </button>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--color-charcoal)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+        </svg>
+      </motion.button>
 
       <AnimatePresence>
         {showConfirmation && (
