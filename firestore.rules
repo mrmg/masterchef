@@ -10,6 +10,27 @@ service cloud.firestore {
       // Allow write access to anyone with the session code
       // This is a trust-based system as specified in the requirements
       allow write: if true;
+      
+      // Connection tracking subcollection
+      match /connections/{connectionId} {
+        allow read: if true;
+        allow write: if true;
+      }
     }
   }
 }
+
+// Firebase Realtime Database rules for presence system
+// Note: These should be added to database.rules.json
+// {
+//   "rules": {
+//     "presence": {
+//       "$sessionCode": {
+//         "$connectionId": {
+//           ".read": true,
+//           ".write": true
+//         }
+//       }
+//     }
+//   }
+// }

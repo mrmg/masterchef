@@ -21,6 +21,12 @@ The MasterChef Game Application is a web-based system for hosting live cooking c
 - **Leaderboard**: A ranked display of all chefs based on their total scores
 - **Real-time Synchronization**: The automatic updating of game state across all connected devices
 - **Device**: Any tablet or mobile device connected to a game session with full control capabilities
+- **Video**: A media file in MP4, MOV, or WebM format uploaded by a participant, with a maximum size of 50 megabytes
+- **Media**: Collective term for photos and videos uploaded during the game session
+- **Active Connection**: A device currently connected to the Firebase real-time synchronization for a game session
+- **Display Name**: The user-provided name associated with uploaded media and comments, stored in a browser cookie
+- **Comment**: A text message posted by a participant, associated with a specific round or general session commentary
+- **Cookie**: Browser storage mechanism used to persist the user's display name across sessions
 
 ## Requirements
 
@@ -278,3 +284,68 @@ The MasterChef Game Application is a web-based system for hosting live cooking c
 3. THE Game System SHALL show notifications when new photos are uploaded during the competition
 4. THE Game System SHALL allow remote viewers to browse the photo gallery at any time
 5. THE Game System SHALL display the current game phase to remote viewers so they can follow along
+
+### Requirement 21
+
+**User Story:** As a participant, I want to upload videos of the cooking action, so that I can capture dynamic moments beyond still photos
+
+#### Acceptance Criteria
+
+1. THE Game System SHALL accept video file uploads in MP4, MOV, and WebM formats
+2. THE Game System SHALL enforce a maximum video file size of 50 megabytes
+3. WHEN a video is uploaded, THE Game System SHALL store it in Firebase Storage and add metadata to Firestore
+4. WHEN a video is uploaded during ROUND_READY, ROUND_ACTIVE, ROUND_COMPLETE, or VOTING phases, THE Game System SHALL associate the video with the current round number and chef IDs
+5. WHEN a video is uploaded during SETUP, RESULTS_COUNTDOWN, or RESULTS phases, THE Game System SHALL mark the video as pre-game or post-game
+6. THE Game System SHALL display videos in the photo gallery alongside photos with a video play icon indicator
+7. WHEN a user taps a video in the gallery, THE Game System SHALL play the video with standard playback controls
+8. THE Game System SHALL generate a thumbnail from the first frame of the video for gallery display
+9. THE Game System SHALL display video duration on the thumbnail in the gallery
+10. THE Game System SHALL update the gallery in real-time when new videos are added
+11. THE Game System SHALL show "New Video" notifications when videos are uploaded by others
+
+### Requirement 22
+
+**User Story:** As a participant, I want to see how many people are actively connected to the session, so that I know who is following along
+
+#### Acceptance Criteria
+
+1. THE Game System SHALL track the number of active connections to each game session
+2. THE Game System SHALL display the active connection count as a small number in the corner of the photo gallery button
+3. THE Game System SHALL update the connection count in real-time when users join or leave the session
+4. THE Game System SHALL detect when a user disconnects from Firebase and decrement the count within 5 seconds
+5. THE Game System SHALL detect when a user reconnects and increment the count immediately
+6. THE Game System SHALL display the connection count on all screens where the photo gallery button is visible
+
+### Requirement 23
+
+**User Story:** As a participant, I want to set my name when uploading media, so that others know who shared each photo or video
+
+#### Acceptance Criteria
+
+1. WHEN a user uploads a photo or video for the first time, THE Game System SHALL prompt for a display name
+2. THE Game System SHALL validate that the display name is between 1 and 30 characters
+3. WHEN a display name is set, THE Game System SHALL store it in a browser cookie
+4. THE Game System SHALL set the cookie to expire after 365 days
+5. WHEN a user uploads subsequent media, THE Game System SHALL use the stored name from the cookie
+6. THE Game System SHALL provide an option to change the display name in the photo gallery settings
+7. THE Game System SHALL associate the display name with each uploaded photo and video in Firestore
+8. THE Game System SHALL display the uploader name in the gallery and full-screen views
+9. IF no name is set in the cookie, THE Game System SHALL default to "User" as the display name
+
+### Requirement 24
+
+**User Story:** As a participant, I want to comment on rounds, so that I can share reactions and banter during the competition
+
+#### Acceptance Criteria
+
+1. THE Game System SHALL provide a comment input interface accessible from all game phases
+2. WHEN a comment is submitted during ROUND_READY, ROUND_ACTIVE, ROUND_COMPLETE, or VOTING phases, THE Game System SHALL associate the comment with the current round number
+3. WHEN a comment is submitted during SETUP, RESULTS_COUNTDOWN, or RESULTS phases, THE Game System SHALL mark the comment as general session commentary
+4. THE Game System SHALL store comments in Firestore with timestamp, author name, and round association
+5. THE Game System SHALL display comments in real-time as they are posted
+6. THE Game System SHALL show a comment feed or thread view grouped by round
+7. THE Game System SHALL display the author name and timestamp for each comment
+8. THE Game System SHALL limit comment length to 500 characters
+9. THE Game System SHALL show "New Comment" notifications when comments are posted by others
+10. THE Game System SHALL allow viewing comments in the photo gallery alongside media for each round
+11. THE Game System SHALL use the same display name from the cookie as used for media uploads

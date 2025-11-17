@@ -284,3 +284,124 @@
   - Ensure photo feed and notifications work for remote viewers
   - Test photo feed across multiple devices simultaneously
   - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5_
+
+- [ ] 18. Add video upload support to media gallery
+- [x] 18.1 Update media service to handle video files
+  - Extend validation to accept MP4, MOV, and WebM formats
+  - Implement 50MB file size limit for videos
+  - Update Firebase Storage upload to handle video files
+  - Modify Firestore schema to include media type field
+  - _Requirements: 21.1, 21.2, 21.3_
+
+- [x] 18.2 Implement video thumbnail generation
+  - Create utility function to extract first frame from video using HTML5 video element
+  - Generate 320px width thumbnail from video frame
+  - Extract video duration metadata
+  - Store thumbnail and duration in Firestore
+  - _Requirements: 21.8, 21.9_
+
+- [x] 18.3 Update MediaGallery component for video display
+  - Rename LivePhotoFeed component to MediaGallery
+  - Update media list to show video thumbnails with play icon overlay
+  - Display video duration on thumbnails
+  - Associate videos with current round based on game phase
+  - Update real-time listeners to handle both photos and videos
+  - _Requirements: 21.4, 21.5, 21.6, 21.9, 21.10_
+
+- [x] 18.4 Implement video playback in full-screen view
+  - Create video player component with HTML5 video controls
+  - Support play/pause, seek, volume, and fullscreen controls
+  - Handle video loading states and errors
+  - Maintain swipe navigation between media items
+  - _Requirements: 21.7_
+
+- [x] 18.5 Add video upload notifications
+  - Update notification system to distinguish between photo and video uploads
+  - Show "New Video" toast notifications
+  - Update badge count to include videos
+  - Test video upload and playback across multiple devices
+  - _Requirements: 21.11_
+
+- [ ] 19. Implement active connection tracking
+- [x] 19.1 Create connection presence system
+  - Generate unique connection ID using crypto.randomUUID()
+  - Create Firestore connection document with lastSeen timestamp
+  - Implement heartbeat mechanism to update lastSeen every 30 seconds
+  - Use Firebase onDisconnect() to remove connection on tab close
+  - _Requirements: 22.1, 22.4, 22.5_
+
+- [x] 19.2 Add connection count display
+  - Subscribe to connections subcollection in Firestore
+  - Count connections with lastSeen within last 60 seconds
+  - Display count in small badge on gallery icon
+  - Update count in real-time as users join/leave
+  - Position badge in top-left corner of gallery icon
+  - _Requirements: 22.2, 22.3, 22.6_
+
+- [x] 19.3 Implement connection cleanup
+  - Create cleanup function to remove stale connections (lastSeen > 60s)
+  - Run cleanup every 60 seconds
+  - Test connection tracking with multiple devices joining and leaving
+  - _Requirements: 22.4_
+
+- [ ] 20. Add display name management with cookie storage
+- [x] 20.1 Implement cookie utilities
+  - Create setDisplayName function to store name in cookie with 365-day expiration
+  - Create getDisplayName function to retrieve name from cookie
+  - Validate display name (1-30 characters)
+  - _Requirements: 23.2, 23.3, 23.4_
+
+- [x] 20.2 Add display name prompt flow
+  - Create modal dialog to prompt for display name
+  - Show prompt when user uploads media or posts comment without name set
+  - Validate and store name in cookie on submit
+  - Use stored name automatically for subsequent uploads/comments
+  - _Requirements: 23.1, 23.5, 23.7_
+
+- [x] 20.3 Add name change functionality
+  - Add settings icon in gallery header
+  - Create settings modal with name input pre-filled with current name
+  - Update cookie when name is changed
+  - Display uploader name in gallery and full-screen views
+  - Default to "User" if no name is set
+  - _Requirements: 23.6, 23.8, 23.9_
+
+- [ ] 21. Implement comments system
+- [x] 21.1 Create comment data structure and service
+  - Define Comment interface in types
+  - Create Firestore comments subcollection structure
+  - Implement submitComment service function
+  - Associate comments with current round based on game phase
+  - Store author name from display name cookie
+  - _Requirements: 24.2, 24.3, 24.4, 24.7_
+
+- [x] 21.2 Add comment input UI
+  - Create comment input field at bottom of gallery modal
+  - Add character counter (max 500 characters)
+  - Implement submit button with validation
+  - Prompt for display name if not set
+  - Disable submit if empty or exceeds character limit
+  - _Requirements: 24.1, 24.8, 24.11_
+
+- [x] 21.3 Implement comment display and grouping
+  - Subscribe to comments collection with real-time listener
+  - Group comments by round in gallery view
+  - Display comments between media items in chronological order
+  - Show author name, text, timestamp, and round context
+  - Use visual distinction for comment cards (different background)
+  - _Requirements: 24.5, 24.6, 24.7, 24.10_
+
+- [x] 21.4 Add comment notifications
+  - Detect new comments from Firestore updates
+  - Show "New Comment from [author]" toast notification
+  - Don't notify the comment author
+  - Include comments in unviewed badge count
+  - Mark comments as viewed when gallery is opened
+  - _Requirements: 24.9_
+
+- [x] 22. Update Firestore schema and security rules
+  - Update session document schema to include media, comments, and connections
+  - Modify security rules to allow read/write access to new subcollections
+  - Test schema changes with Firebase Emulator
+  - Deploy updated security rules to Firebase
+  - _Requirements: 21.3, 22.1, 24.4_

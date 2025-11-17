@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PhotoGallery from './PhotoGallery';
+import MediaGallery from './MediaGallery';
 import type { SessionDocument } from '../types/index';
 
 interface PhotoGalleryButtonProps {
@@ -17,7 +17,7 @@ const PhotoGalleryButton = ({ sessionCode, gameState, uploaderName, currentPhase
   const [unviewedCount, setUnviewedCount] = useState(0);
   const [lastViewedTimestamp, setLastViewedTimestamp] = useState<number | null>(null);
 
-  const storageKey = `masterchef_photos_viewed_${sessionCode}`;
+  const storageKey = `masterchef_media_viewed_${sessionCode}`;
 
   // Load last viewed timestamp from localStorage
   useEffect(() => {
@@ -27,27 +27,42 @@ const PhotoGalleryButton = ({ sessionCode, gameState, uploaderName, currentPhase
     }
   }, [storageKey]);
 
-  // Calculate unviewed count
+  // Calculate unviewed count (media + comments)
   useEffect(() => {
-    if (!gameState.photos) {
-      setUnviewedCount(0);
-      return;
+    let count = 0;
+
+    // Count unviewed media (support both old photos and new media fields)
+    const media = gameState.media ? Object.values(gameState.media) : 
+                  gameState.photos ? Object.values(gameState.photos) : [];
+    
+    if (lastViewedTimestamp === null) {
+      count += media.length;
+    } else {
+      const unviewedMedia = media.filter(
+        item => item.timestamp.toMillis() > lastViewedTimestamp
+      );
+      count += unviewedMedia.length;
     }
 
-    const photos = Object.values(gameState.photos);
-    if (lastViewedTimestamp === null) {
-      setUnviewedCount(photos.length);
-    } else {
-      const unviewed = photos.filter(
-        photo => photo.timestamp.toMillis() > lastViewedTimestamp
-      );
-      setUnviewedCount(unviewed.length);
+    // Count unviewed comments
+    if (gameState.comments) {
+      const comments = Object.values(gameState.comments);
+      if (lastViewedTimestamp === null) {
+        count += comments.length;
+      } else {
+        const unviewedComments = comments.filter(
+          comment => comment.timestamp.toMillis() > lastViewedTimestamp
+        );
+        count += unviewedComments.length;
+      }
     }
-  }, [gameState.photos, lastViewedTimestamp]);
+
+    setUnviewedCount(count);
+  }, [gameState.photos, gameState.media, gameState.comments, lastViewedTimestamp]);
 
   const handleOpenGallery = () => {
     setIsGalleryOpen(true);
-    // Mark all photos as viewed
+    // Mark all media and comments as viewed
     const now = Date.now();
     localStorage.setItem(storageKey, now.toString());
     setLastViewedTimestamp(now);
@@ -123,7 +138,7 @@ const PhotoGalleryButton = ({ sessionCode, gameState, uploaderName, currentPhase
 
       <AnimatePresence>
         {isGalleryOpen && (
-          <PhotoGallery
+          <MediaGallery
             sessionCode={sessionCode}
             gameState={gameState}
             uploaderName={uploaderName}

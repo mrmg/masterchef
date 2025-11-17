@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SessionDocument, LeaderboardEntry } from '../types/index';
 import { calculateLeaderboards, getWinner, getCategoryLeaderboard } from '../utils/results';
+import { calculateAnalytics } from '../utils/analytics';
 
 interface ResultsDisplayProps {
   gameState: SessionDocument;
 }
 
-type ViewType = 'winner' | 'overall' | 'technique' | 'presentation' | 'taste' | 'votes';
+type ViewType = 'winner' | 'overall' | 'technique' | 'presentation' | 'taste' | 'votes' | 'analytics';
 
 const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
   const [currentView, setCurrentView] = useState<ViewType>('winner');
@@ -327,6 +328,454 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
     );
   };
 
+  const renderAnalytics = () => {
+    const analytics = calculateAnalytics(gameState, leaderboard);
+
+    // Check if we have enough data
+    const allVoters = new Set<string>();
+    Object.values(gameState.votes).forEach(roundVotes => {
+      Object.keys(roundVotes).forEach(voter => allVoters.add(voter));
+    });
+
+    if (allVoters.size === 0) {
+      return (
+        <motion.div
+          key="analytics"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          style={{ textAlign: 'center' }}
+        >
+          <h2
+            style={{
+              fontSize: '2rem',
+              fontFamily: 'var(--font-serif)',
+              color: 'var(--color-gold)',
+              marginBottom: '2rem',
+            }}
+          >
+            Analytics & Insights
+          </h2>
+          <p style={{ color: 'var(--color-charcoal)', fontSize: '1.125rem' }}>
+            Not enough voting data for analytics
+          </p>
+        </motion.div>
+      );
+    }
+
+    return (
+      <motion.div
+        key="analytics"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <h2
+          style={{
+            fontSize: '2rem',
+            fontFamily: 'var(--font-serif)',
+            color: 'var(--color-gold)',
+            marginBottom: '2rem',
+            textAlign: 'center',
+          }}
+        >
+          Analytics & Insights
+        </h2>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* Category Winners Section */}
+          {(analytics.categoryWinners.technique || analytics.categoryWinners.presentation || analytics.categoryWinners.taste) && (
+            <div
+              style={{
+                backgroundColor: 'white',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
+                border: '2px solid var(--color-charcoal)',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '1.5rem',
+                  fontFamily: 'var(--font-serif)',
+                  color: 'var(--color-charcoal)',
+                  marginBottom: '1rem',
+                }}
+              >
+                🏆 Category Winners
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {analytics.categoryWinners.technique && (
+                  <div
+                    style={{
+                      backgroundColor: 'var(--color-cream)',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--color-charcoal)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                          Best Technique
+                        </div>
+                        <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.25rem' }}>
+                          {analytics.categoryWinners.technique.chefName} - {analytics.categoryWinners.technique.dish}
+                          {analytics.categoryWinners.technique.isOverallWinner && ' ⭐'}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                        {analytics.categoryWinners.technique.score}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {analytics.categoryWinners.presentation && (
+                  <div
+                    style={{
+                      backgroundColor: 'var(--color-cream)',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--color-charcoal)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                          Best Presented Dish
+                        </div>
+                        <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.25rem' }}>
+                          {analytics.categoryWinners.presentation.chefName} - {analytics.categoryWinners.presentation.dish}
+                          {analytics.categoryWinners.presentation.isOverallWinner && ' ⭐'}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                        {analytics.categoryWinners.presentation.score}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {analytics.categoryWinners.taste && (
+                  <div
+                    style={{
+                      backgroundColor: 'var(--color-cream)',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--color-charcoal)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                          Best Taste
+                        </div>
+                        <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.25rem' }}>
+                          {analytics.categoryWinners.taste.chefName} - {analytics.categoryWinners.taste.dish}
+                          {analytics.categoryWinners.taste.isOverallWinner && ' ⭐'}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                        {analytics.categoryWinners.taste.score}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Voter Insights Section */}
+          {(analytics.judgesFavorite || analytics.chefsFavorite || analytics.toughestCritic || analytics.mostGenerousVoter) && (
+            <div
+              style={{
+                backgroundColor: 'white',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
+                border: '2px solid var(--color-charcoal)',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '1.5rem',
+                  fontFamily: 'var(--font-serif)',
+                  color: 'var(--color-charcoal)',
+                  marginBottom: '1rem',
+                }}
+              >
+                👨‍🍳 Voter Insights
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {analytics.judgesFavorite && analytics.chefsFavorite && 
+                 analytics.judgesFavorite.chefId === analytics.chefsFavorite.chefId ? (
+                  <div
+                    style={{
+                      backgroundColor: 'var(--color-cream)',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--color-charcoal)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                      Unanimous Favorite
+                    </div>
+                    <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.5rem' }}>
+                      Both judges and chefs agreed: {analytics.judgesFavorite.chefName} - {analytics.judgesFavorite.dish}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {analytics.judgesFavorite && (
+                      <div
+                        style={{
+                          backgroundColor: 'var(--color-cream)',
+                          padding: '1rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid var(--color-charcoal)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                              Judges' Favorite
+                            </div>
+                            <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.25rem' }}>
+                              {analytics.judgesFavorite.chefName} - {analytics.judgesFavorite.dish}
+                            </div>
+                            <div style={{ fontSize: '0.875rem', color: 'var(--color-charcoal)', opacity: 0.7, marginTop: '0.25rem' }}>
+                              {analytics.judgesFavorite.voteCount} judge vote{analytics.judgesFavorite.voteCount !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                            {analytics.judgesFavorite.averageScore.toFixed(1)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {analytics.chefsFavorite && (
+                      <div
+                        style={{
+                          backgroundColor: 'var(--color-cream)',
+                          padding: '1rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid var(--color-charcoal)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                              Chefs' Favorite
+                            </div>
+                            <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.25rem' }}>
+                              {analytics.chefsFavorite.chefName} - {analytics.chefsFavorite.dish}
+                            </div>
+                            <div style={{ fontSize: '0.875rem', color: 'var(--color-charcoal)', opacity: 0.7, marginTop: '0.25rem' }}>
+                              {analytics.chefsFavorite.voteCount} chef vote{analytics.chefsFavorite.voteCount !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                            {analytics.chefsFavorite.averageScore.toFixed(1)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+                {analytics.toughestCritic && (
+                  <div
+                    style={{
+                      backgroundColor: 'var(--color-cream)',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--color-charcoal)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                          Toughest Critic
+                        </div>
+                        <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.25rem' }}>
+                          {analytics.toughestCritic.voterName}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--color-charcoal)', opacity: 0.7, marginTop: '0.25rem' }}>
+                          {analytics.toughestCritic.voteCount} vote{analytics.toughestCritic.voteCount !== 1 ? 's' : ''} • Range: {analytics.toughestCritic.minScore}-{analytics.toughestCritic.maxScore}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                        {analytics.toughestCritic.averageScore.toFixed(1)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {analytics.mostGenerousVoter && (
+                  <div
+                    style={{
+                      backgroundColor: 'var(--color-cream)',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--color-charcoal)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                          Most Generous Voter
+                        </div>
+                        <div style={{ fontSize: '1rem', color: 'var(--color-charcoal)', marginTop: '0.25rem' }}>
+                          {analytics.mostGenerousVoter.voterName}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--color-charcoal)', opacity: 0.7, marginTop: '0.25rem' }}>
+                          {analytics.mostGenerousVoter.voteCount} vote{analytics.mostGenerousVoter.voteCount !== 1 ? 's' : ''} • Range: {analytics.mostGenerousVoter.minScore}-{analytics.mostGenerousVoter.maxScore}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                        {analytics.mostGenerousVoter.averageScore.toFixed(1)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Most Controversial Section */}
+          {analytics.mostControversial && (
+            <div
+              style={{
+                backgroundColor: 'white',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
+                border: '2px solid var(--color-charcoal)',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '1.5rem',
+                  fontFamily: 'var(--font-serif)',
+                  color: 'var(--color-charcoal)',
+                  marginBottom: '1rem',
+                }}
+              >
+                🔥 Most Controversial
+              </h3>
+              <div
+                style={{
+                  backgroundColor: 'var(--color-cream)',
+                  padding: '1rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid var(--color-charcoal)',
+                }}
+              >
+                <div style={{ fontWeight: 'bold', fontSize: '1.125rem', color: 'var(--color-charcoal)' }}>
+                  {analytics.mostControversial.chefName} - {analytics.mostControversial.dish}
+                </div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-charcoal)', marginTop: '0.5rem' }}>
+                  Variance: {analytics.mostControversial.variance.toFixed(2)} • 
+                  Range: {analytics.mostControversial.minScore}-{analytics.mostControversial.maxScore} • 
+                  Average: {analytics.mostControversial.averageScore.toFixed(1)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* General Statistics Section */}
+          <div
+            style={{
+              backgroundColor: 'white',
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: '2px solid var(--color-charcoal)',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '1.5rem',
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--color-charcoal)',
+                marginBottom: '1rem',
+              }}
+            >
+              📊 Competition Statistics
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.75rem',
+                  backgroundColor: 'var(--color-cream)',
+                  borderRadius: '0.5rem',
+                }}
+              >
+                <span style={{ color: 'var(--color-charcoal)' }}>Average Score</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                  {analytics.generalStats.averageScore.toFixed(1)}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.75rem',
+                  backgroundColor: 'var(--color-cream)',
+                  borderRadius: '0.5rem',
+                }}
+              >
+                <span style={{ color: 'var(--color-charcoal)' }}>Highest Single Vote</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                  {analytics.generalStats.highestSingleVote}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.75rem',
+                  backgroundColor: 'var(--color-cream)',
+                  borderRadius: '0.5rem',
+                }}
+              >
+                <span style={{ color: 'var(--color-charcoal)' }}>Lowest Single Vote</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                  {analytics.generalStats.lowestSingleVote}
+                </span>
+              </div>
+              {analytics.generalStats.perfectScores > 0 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '0.75rem',
+                    backgroundColor: 'var(--color-cream)',
+                    borderRadius: '0.5rem',
+                  }}
+                >
+                  <span style={{ color: 'var(--color-charcoal)' }}>Perfect Scores (30/30)</span>
+                  <span style={{ fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                    {analytics.generalStats.perfectScores}
+                  </span>
+                </div>
+              )}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.75rem',
+                  backgroundColor: 'var(--color-cream)',
+                  borderRadius: '0.5rem',
+                }}
+              >
+                <span style={{ color: 'var(--color-charcoal)' }}>Score Spread (1st - Last)</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--color-gold)' }}>
+                  {analytics.generalStats.scoreSpread}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div
       style={{
@@ -347,6 +796,7 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
           { key: 'presentation', label: 'Presentation' },
           { key: 'taste', label: 'Taste' },
           { key: 'votes', label: 'Votes' },
+          { key: 'analytics', label: 'Analytics' },
         ].map((view) => (
           <button
             key={view.key}
@@ -375,6 +825,7 @@ const ResultsDisplay = ({ gameState }: ResultsDisplayProps) => {
           {currentView === 'presentation' && renderLeaderboard(getCategoryLeaderboard(leaderboard, 'presentation'), 'Presentation Leaderboard', 'presentationScore')}
           {currentView === 'taste' && renderLeaderboard(getCategoryLeaderboard(leaderboard, 'taste'), 'Taste Leaderboard', 'tasteScore')}
           {currentView === 'votes' && renderVoteTables()}
+          {currentView === 'analytics' && renderAnalytics()}
         </AnimatePresence>
       </div>
     </div>

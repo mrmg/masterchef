@@ -352,3 +352,61 @@ export const addPhoto = async (
     },
   });
 };
+
+export const addMedia = async (
+  sessionCode: string,
+  mediaId: string,
+  type: 'photo' | 'video',
+  url: string,
+  thumbnailUrl: string,
+  uploadedBy: string,
+  storageRef: string,
+  roundNumber: number | null,
+  roundChefs: string[],
+  duration?: number
+): Promise<void> => {
+  const sessionRef = doc(db, SESSIONS_COLLECTION, sessionCode);
+  
+  const mediaData: any = {
+    id: mediaId,
+    type,
+    url,
+    thumbnailUrl,
+    uploadedBy,
+    timestamp: Timestamp.now(),
+    storageRef,
+    roundNumber,
+    roundChefs,
+  };
+  
+  if (duration !== undefined) {
+    mediaData.duration = duration;
+  }
+  
+  await updateDoc(sessionRef, {
+    [`media.${mediaId}`]: mediaData,
+  });
+};
+
+/**
+ * Adds a comment to the session
+ */
+export const addComment = async (
+  sessionCode: string,
+  commentId: string,
+  text: string,
+  author: string,
+  roundNumber: number | null
+): Promise<void> => {
+  const sessionRef = doc(db, SESSIONS_COLLECTION, sessionCode);
+  
+  await updateDoc(sessionRef, {
+    [`comments.${commentId}`]: {
+      id: commentId,
+      text,
+      author,
+      timestamp: Timestamp.now(),
+      roundNumber,
+    },
+  });
+};

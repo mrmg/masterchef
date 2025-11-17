@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "presence": {
+      "$sessionCode": {
+        "$connectionId": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    }
+  }
+}

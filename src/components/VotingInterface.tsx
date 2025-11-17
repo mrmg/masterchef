@@ -7,7 +7,7 @@ interface VotingInterfaceProps {
   sessionCode: string;
   roundNumber: number;
   currentRoundChefs: Chef[];
-  allParticipants: string[];
+  allParticipants: Chef[];
   completedVoters: string[];
   currentVoterName?: string;
 }
@@ -73,14 +73,18 @@ const VotingInterface = ({
 
   // Filter out voters who have already completed voting in this session
   // AND filter out participants who have no one to vote for (they were the only chef)
-  const availableVoters = allParticipants.filter(name => {
+  const availableVoters = allParticipants.filter(participant => {
     // Already completed voting
-    if (completedVoters.includes(name)) return false;
+    if (completedVoters.includes(participant.name)) return false;
     
     // Check if this person has anyone to vote for
-    const chefsTheyCanVoteFor = currentRoundChefs.filter(chef => chef.name !== name);
+    const chefsTheyCanVoteFor = currentRoundChefs.filter(chef => chef.name !== participant.name);
     return chefsTheyCanVoteFor.length > 0;
   });
+
+  // Separate chefs and judges for display
+  const availableChefs = availableVoters.filter(p => !p.isJudge);
+  const availableJudges = availableVoters.filter(p => p.isJudge);
 
   // Get chefs that the selected voter can vote for (exclude themselves)
   const chefsToVoteFor = selectedVoter 
@@ -169,40 +173,93 @@ const VotingInterface = ({
             Who are you?
           </h1>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1rem',
-            }}
-          >
-            {availableVoters.map((name) => (
-              <button
-                key={name}
-                onClick={() => handleVoterSelect(name)}
-                style={{
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  border: '2px solid var(--color-charcoal)',
-                  borderRadius: '0.5rem',
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '1.25rem',
-                  color: 'var(--color-charcoal)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-gold)';
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'white';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                {name}
-              </button>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Chefs Section */}
+            {availableChefs.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '1rem',
+                  }}
+                >
+                  {availableChefs.map((participant) => (
+                    <button
+                      key={participant.id}
+                      onClick={() => handleVoterSelect(participant.name)}
+                      style={{
+                        padding: '1.5rem',
+                        backgroundColor: 'white',
+                        border: '2px solid var(--color-charcoal)',
+                        borderRadius: '0.5rem',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '1.25rem',
+                        color: 'var(--color-charcoal)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--color-gold)';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'white';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      {participant.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Judges Section */}
+            {availableJudges.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '1rem',
+                  }}
+                >
+                  {availableJudges.map((participant) => (
+                    <button
+                      key={participant.id}
+                      onClick={() => handleVoterSelect(participant.name)}
+                      style={{
+                        padding: '1.5rem',
+                        backgroundColor: 'white',
+                        border: '2px dashed var(--color-gold)',
+                        borderRadius: '0.5rem',
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '1.25rem',
+                        color: 'var(--color-charcoal)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--color-gold)';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'white';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      <span style={{ fontSize: '1.5rem' }}>🍸</span>
+                      <span>{participant.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

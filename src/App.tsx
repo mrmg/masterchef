@@ -135,7 +135,6 @@ const GameContent = () => {
 
     if (phase === GamePhase.VOTING) {
       const chefs = getChefsByIds(gameState.chefs, currentRoundChefs);
-      const participants = getAllParticipantNames(gameState.chefs);
       const votingStatus = gameState.votingStatus[currentRound];
       
       // Check if all votes are received
@@ -178,7 +177,7 @@ const GameContent = () => {
           sessionCode={sessionCode}
           roundNumber={currentRound}
           currentRoundChefs={chefs}
-          allParticipants={participants}
+          allParticipants={Object.values(gameState.chefs)}
           completedVoters={votingStatus?.completedVoters || []}
         />
       );

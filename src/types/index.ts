@@ -17,6 +17,7 @@ export interface Chef {
   dish: string;
   order: number;
   hasCooked: boolean;
+  isJudge?: boolean;
 }
 
 export interface CategoryScores {
@@ -72,6 +73,12 @@ export interface SessionDocument {
   photos?: {
     [photoId: string]: Photo;
   };
+  media?: {
+    [mediaId: string]: MediaItem;
+  };
+  comments?: {
+    [commentId: string]: Comment;
+  };
 }
 
 export interface LeaderboardEntry {
@@ -92,6 +99,7 @@ export enum ResultView {
   PRESENTATION_LEADERBOARD = 'PRESENTATION_LEADERBOARD',
   TASTE_LEADERBOARD = 'TASTE_LEADERBOARD',
   VOTE_TABLES = 'VOTE_TABLES',
+  ANALYTICS = 'ANALYTICS',
 }
 
 export interface Photo {
@@ -103,4 +111,25 @@ export interface Photo {
   storageRef: string;
   roundNumber: number | null;
   roundChefs: string[];
+}
+
+export interface MediaItem {
+  id: string;
+  type: 'photo' | 'video';
+  url: string;
+  thumbnailUrl: string;
+  uploadedBy: string;
+  timestamp: Timestamp;
+  storageRef: string;
+  roundNumber: number | null;
+  roundChefs: string[];
+  duration?: number; // video duration in seconds (only for videos)
+}
+
+export interface Comment {
+  id: string;
+  text: string;
+  author: string;
+  timestamp: Timestamp;
+  roundNumber: number | null; // null for general session commentary
 }

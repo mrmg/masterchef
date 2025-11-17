@@ -2,11 +2,20 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow anyone to read photos
+    // Allow anyone to read photos (legacy path)
     match /sessions/{sessionCode}/photos/{photoId}/{fileName} {
       allow read: if true;
       
       // Allow anyone with the session code to upload photos
+      // This is a trust-based system as specified in the requirements
+      allow write: if true;
+    }
+    
+    // Allow anyone to read and write media (photos and videos)
+    match /sessions/{sessionCode}/media/{mediaId}/{fileName} {
+      allow read: if true;
+      
+      // Allow anyone with the session code to upload media
       // This is a trust-based system as specified in the requirements
       allow write: if true;
     }

@@ -6,14 +6,14 @@ export const getNextRoundChefs = (
   simultaneousPlayers: number
 ): string[] => {
   const chefList = Object.values(chefs)
-    .filter(chef => !chef.hasCooked)
+    .filter(chef => !chef.isJudge && !chef.hasCooked)
     .sort((a, b) => a.order - b.order);
 
   return chefList.slice(0, simultaneousPlayers).map(chef => chef.id);
 };
 
 export const hasMoreRounds = (chefs: { [chefId: string]: Chef }): boolean => {
-  return Object.values(chefs).some(chef => !chef.hasCooked);
+  return Object.values(chefs).some(chef => !chef.isJudge && !chef.hasCooked);
 };
 
 export const getCurrentRoundNumber = (session: SessionDocument): number => {
@@ -39,3 +39,15 @@ export const getChefsByIds = (
 ): Chef[] => {
   return chefIds.map(id => chefs[id]).filter(Boolean);
 };
+
+export const getChefs = (participants: { [id: string]: Chef }): Chef[] => {
+  return Object.values(participants).filter(p => !p.isJudge);
+};
+
+export const getJudges = (participants: { [id: string]: Chef }): Chef[] => {
+  return Object.values(participants).filter(p => p.isJudge === true);
+};
+
+export const getAllParticipants = (participants: { [id: string]: Chef }): Chef[] => {
+  return Object.values(participants);
+};;

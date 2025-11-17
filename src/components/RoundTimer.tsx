@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { Chef } from '../types/index';
 import { Timestamp } from 'firebase/firestore';
+import { generateMicrowaveBeep } from '../utils/generateBeep';
 
 // Import audio files
 import countdownSound from '../assets/countdown.mp3';
@@ -14,6 +15,22 @@ import sound6 from '../assets/WHAT ARE YOU - AUDIO FROM JAYUZUMI.COM.mp3';
 import sound7 from '../assets/YOU\'RE A GREAT TALKER BUT YOU\'RE A SH-T COOK - AUDIO FROM JAYUZUMI.COM.mp3';
 
 const endSounds = [sound1, sound2, sound3, sound4, sound5, sound6, sound7];
+
+// Configuration for test mode vs production mode
+const USE_TEST_MODE = true; // Set to false for production
+
+/**
+ * Calculate interval checkpoints for beeps
+ * For 20-minute round (1200s): [900, 600, 300] (15min, 10min, 5min)
+ * For 2-minute test (120s): [90, 60, 30] (1m30s, 1m, 30s)
+ */
+const calculateIntervals = (duration: number, interval: number): number[] => {
+  const intervals: number[] = [];
+  for (let time = interval; time < duration; time += interval) {
+    intervals.push(time);
+  }
+  return intervals.reverse(); // Descending order for countdown
+};
 
 interface RoundTimerProps {
   roundTime: number;
@@ -36,6 +53,13 @@ const RoundTimer = ({
   const [isActive, setIsActive] = useState(false);
   const countdownAudioRef = useRef<HTMLAudioElement | null>(null);
   const endAudioRef = useRef<HTMLAudioElement | null>(null);
+  const intervalBeepRef = useRef<HTMLAudioElement | null>(null);
+  const playedIntervalsRef = useRef<Set<number>>(new Set());
+
+  // Calculate interval checkpoints based on mode
+  const totalDuration = USE_TEST_MODE ? 120 : roundTime; // 2 min vs actual round time
+  const intervalSeconds = USE_TEST_MODE ? 30 : 300; // 30 sec vs 5 min
+  const intervalCheckpoints = calculateIntervals(totalDuration, intervalSeconds);
 
   // Initialize audio elements
   useEffect(() => {
@@ -49,6 +73,12 @@ const RoundTimer = ({
     endSound.loop = false; // Ensure no looping
     endAudioRef.current = endSound;
     
+    // Initialize interval beep audio (programmatically generated)
+    const beepUrl = generateMicrowaveBeep();
+    const intervalBeep = new Audio(beepUrl);
+    intervalBeep.loop = false;
+    intervalBeepRef.current = intervalBeep;
+    
     // Listen for mute toggle events
     const handleMuteToggle = (event: Event) => {
       const customEvent = event as CustomEvent<{ muted: boolean }>;
@@ -57,6 +87,9 @@ const RoundTimer = ({
       }
       if (endAudioRef.current) {
         endAudioRef.current.volume = customEvent.detail.muted ? 0 : 1;
+      }
+      if (intervalBeepRef.current) {
+        intervalBeepRef.current.volume = customEvent.detail.muted ? 0 : 1;
       }
     };
     
@@ -67,6 +100,7 @@ const RoundTimer = ({
     if (savedMuteState === 'true') {
       if (countdownAudioRef.current) countdownAudioRef.current.volume = 0;
       if (endAudioRef.current) endAudioRef.current.volume = 0;
+      if (intervalBeepRef.current) intervalBeepRef.current.volume = 0;
     }
     
     return () => {
@@ -79,12 +113,19 @@ const RoundTimer = ({
         endAudioRef.current.pause();
         endAudioRef.current = null;
       }
+      if (intervalBeepRef.current) {
+        intervalBeepRef.current.pause();
+        intervalBeepRef.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
     if (timerStartTime && timerEndTime) {
       setIsActive(true);
+      
+      // Reset played intervals for new round
+      playedIntervalsRef.current.clear();
       
       // Use refs to track if sounds have been played to avoid re-renders
       const soundsPlayed = { countdown: false, end: false };
@@ -95,6 +136,16 @@ const RoundTimer = ({
         const remaining = Math.max(0, Math.floor((endMs - now) / 1000));
         
         setRemainingTime(remaining);
+        
+        // Check for interval beeps
+        if (intervalCheckpoints.includes(remaining) && 
+            !playedIntervalsRef.current.has(remaining) && 
+            intervalBeepRef.current) {
+          intervalBeepRef.current.play().catch(err => 
+            console.error('Failed to play interval beep:', err)
+          );
+          playedIntervalsRef.current.add(remaining);
+        }
         
         // Play countdown sound at 32 seconds
         if (remaining === 32 && !soundsPlayed.countdown && countdownAudioRef.current) {

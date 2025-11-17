@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { SessionDocument, GamePhase } from '../types/index';
 import { subscribeToSession, updateGamePhase } from '../services/sessionService';
+import { startHeartbeat, stopHeartbeat } from '../services/connectionService';
+import { getDisplayName } from '../utils/cookieUtils';
 
 interface GameContextValue {
   sessionCode: string;
@@ -41,6 +43,16 @@ export const GameProvider = ({ sessionCode, children }: GameProviderProps) => {
 
     return () => {
       unsubscribe();
+    };
+  }, [sessionCode]);
+
+  // Start heartbeat for session-wide connection tracking
+  useEffect(() => {
+    const displayName = getDisplayName() || 'User';
+    startHeartbeat(sessionCode, displayName);
+
+    return () => {
+      stopHeartbeat();
     };
   }, [sessionCode]);
 

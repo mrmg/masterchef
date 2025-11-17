@@ -4,18 +4,20 @@ export const calculateLeaderboards = (session: SessionDocument): LeaderboardEntr
   const { chefs, votes } = session;
   const chefScores: { [chefId: string]: LeaderboardEntry } = {};
 
-  // Initialize scores for all chefs
+  // Initialize scores for all chefs (exclude judges)
   Object.values(chefs).forEach((chef) => {
-    chefScores[chef.id] = {
-      chefId: chef.id,
-      chefName: chef.name,
-      dish: chef.dish,
-      totalScore: 0,
-      techniqueScore: 0,
-      presentationScore: 0,
-      tasteScore: 0,
-      rank: 0,
-    };
+    if (!chef.isJudge) {
+      chefScores[chef.id] = {
+        chefId: chef.id,
+        chefName: chef.name,
+        dish: chef.dish,
+        totalScore: 0,
+        techniqueScore: 0,
+        presentationScore: 0,
+        tasteScore: 0,
+        rank: 0,
+      };
+    }
   });
 
   // Aggregate votes
